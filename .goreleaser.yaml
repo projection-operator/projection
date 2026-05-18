@@ -65,14 +65,15 @@ sboms:
   - artifacts: archive
 
 # Sign each release archive with cosign keyless (OIDC-backed via GitHub
-# Actions). Cosign v3+ writes a single bundle file (signature + cert combined)
-# via --new-bundle-format, which is the default — the older --output-signature
-# / --output-certificate flags are silently ignored once that mode is on.
-# Producing {archive}.cosign.bundle satisfies OpenSSF Scorecard's
-# Signed-Releases check (verifiable via `cosign verify-blob --bundle`).
+# Actions). Cosign v3+ writes a Sigstore-conformant bundle (signature + cert
+# combined) via --bundle; the bytes are identical regardless of the output
+# filename. We use the `.sigstore` extension because OpenSSF Scorecard's
+# Signed-Releases check pattern-matches asset names against a fixed allow-list
+# (.asc, .minisig, .sig, .sign, .sigstore, .sigstore.json) — `.cosign.bundle`
+# is not in that list. Users verify with `cosign verify-blob --bundle <file>`.
 signs:
   - cmd: cosign
-    signature: ${artifact}.cosign.bundle
+    signature: ${artifact}.sigstore
     args:
       - sign-blob
       - --yes

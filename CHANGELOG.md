@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-05-18
+
+### Changed
+
+- Release archives are now signed as `*.tar.gz.sigstore` instead of `*.tar.gz.cosign.bundle`. The bundle bytes are identical (both are Sigstore-conformant signatures) and verification with `cosign verify-blob --bundle <file>` is unchanged. The rename aligns with OpenSSF Scorecard's `Signed-Releases` filename allow-list (`.asc`, `.minisig`, `.sig`, `.sign`, `.sigstore`, `.sigstore.json`), under which `.cosign.bundle` was unrecognized. Asset names on v0.2.0/v0.3.0/v0.3.1 were retroactively renamed via the GitHub Releases API so the Scorecard score recovers without waiting for the bundle files to age out of its 5-release window. ([#104](https://github.com/projection-operator/projection/pull/104))
+- Helm chart now advertises `artifacthub.io/operatorCapabilities: Full Lifecycle` (level 3 of 5) on Artifact Hub, replacing the prior `Basic Install` claim. The reconciler already implements the level-3 contract — drift correction on every reconcile, finalizer-driven cleanup scanning every namespace, and stale-destination cleanup when selector matches change — which had been understated. ([#99](https://github.com/projection-operator/projection/pull/99))
+
 ## [0.3.1] - 2026-05-10
 
 ### Added

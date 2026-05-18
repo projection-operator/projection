@@ -115,14 +115,14 @@ Need to mirror into many namespaces from one source? Use `ClusterProjection` (cl
 
 ```bash
 helm install projection oci://ghcr.io/projection-operator/charts/projection \
-  --version 0.3.1 \
+  --version 0.3.2 \
   --namespace projection-system --create-namespace
 ```
 
 ### `kubectl apply`
 
 ```bash
-kubectl apply -f https://github.com/projection-operator/projection/releases/download/v0.3.1/install.yaml
+kubectl apply -f https://github.com/projection-operator/projection/releases/download/v0.3.2/install.yaml
 ```
 
 Then create your first `Projection`:

@@ -14,14 +14,14 @@ This walks through installing the `projection` operator and creating your first 
 
 ```bash
 helm install projection oci://ghcr.io/projection-operator/charts/projection \
-  --version 0.3.1 \
+  --version 0.3.2 \
   --namespace projection-system --create-namespace
 ```
 
 ### Option 2 — `kubectl apply`
 
 ```bash
-kubectl apply -f https://github.com/projection-operator/projection/releases/download/v0.3.1/install.yaml
+kubectl apply -f https://github.com/projection-operator/projection/releases/download/v0.3.2/install.yaml
 ```
 
 Either way, verify the operator is healthy:

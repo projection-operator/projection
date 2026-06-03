@@ -158,3 +158,64 @@ if $dry_run; then
   echo "$comment_body"
   echo "===== end preview ====="
 fi
+
+# Insert a new "## [<next_ver>] - YYYY-MM-DD" section directly above the most
+# recent stable section header. Always emit empty Added/Changed/Fixed scaffolds
+# for humans to fill in (matches existing CHANGELOG.md style).
+mutate_changelog() {
+  local target="$1"
+  local today
+  today=$(date +%F)
+
+  # Find the line number of the latest stable section header (e.g. "## [0.3.2]").
+  local prev_header_line
+  prev_header_line=$(grep -n "^## \[${ver}\]" "$target" | head -1 | cut -d: -f1)
+  if [[ -z "$prev_header_line" ]]; then
+    echo "ERROR: could not find '## [${ver}]' header in $target" >&2
+    return 1
+  fi
+
+  local section_file="$target.section"
+  cat > "$section_file" <<EOF
+## [${next_ver}] - ${today}
+
+### Added
+
+### Changed
+
+### Fixed
+
+EOF
+
+  # awk insertion: print the new section's contents right before the matching line.
+  # Read the section file once into an array, then emit it at the matched line.
+  awk -v line="$prev_header_line" -v section_file="$section_file" '
+    BEGIN {
+      n = 0
+      while ((getline s < section_file) > 0) {
+        block[n++] = s
+      }
+      close(section_file)
+    }
+    NR==line {
+      for (i = 0; i < n; i++) print block[i]
+    }
+    { print }
+  ' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
+  rm -f "$section_file"
+}
+
+# Apply all file mutations to a temp working dir, then either show diff (dry-run)
+# or apply for real (live mode). This keeps mutation logic identical between modes.
+workdir=$(mktemp -d)
+trap 'rm -rf "$workdir"' EXIT
+cp CHANGELOG.md "$workdir/CHANGELOG.md"
+
+mutate_changelog "$workdir/CHANGELOG.md"
+
+if $dry_run; then
+  echo ""
+  echo "===== CHANGELOG.md diff (dry-run preview) ====="
+  diff -u CHANGELOG.md "$workdir/CHANGELOG.md" || true
+  echo "===== end diff ====="
+fi

@@ -278,3 +278,45 @@ if $dry_run; then
     fi
   done
 fi
+
+if ! $dry_run; then
+  branch="release/${next_tag}-prep"
+
+  # Refuse to overwrite an existing branch — operator must delete first if they
+  # really want to re-cut.
+  if git ls-remote --heads origin "$branch" | grep -q .; then
+    echo "ERROR: branch $branch already exists on origin" >&2
+    echo "       (delete it first if you intend to recut: gh api -X DELETE repos/:owner/:repo/git/refs/heads/$branch)" >&2
+    exit 1
+  fi
+
+  # Create branch off current HEAD (workflow guarantees this is main).
+  git switch -c "$branch"
+
+  # Apply the mutations from workdir to the real tree.
+  cp "$workdir/CHANGELOG.md" CHANGELOG.md
+  cp "$workdir/charts/projection/Chart.yaml" charts/projection/Chart.yaml
+  cp "$workdir/charts/projection/README.md" charts/projection/README.md
+  cp "$workdir/README.md" README.md
+  cp "$workdir/docs/getting-started.md" docs/getting-started.md
+  cp "$workdir/docs/security.md" docs/security.md
+
+  git add CHANGELOG.md charts/projection/Chart.yaml charts/projection/README.md \
+          README.md docs/getting-started.md docs/security.md
+
+  git commit -m "release: ${next_tag} prep (CHANGELOG, chart bump, doc version strings)"
+  git push origin "$branch"
+
+  # Open the PR.
+  pr_url=$(gh pr create \
+    --base main --head "$branch" \
+    --title "release: ${next_tag} prep (CHANGELOG, chart bump, doc version strings)" \
+    --body "Prep PR for ${next_tag}. CHANGELOG scaffold awaits human prose — see the categorized PR list in the comment below." \
+    --label release)
+
+  echo "Opened PR: $pr_url"
+
+  # Post the categorized PR-list comment.
+  gh pr comment "$pr_url" --body "$comment_body"
+  echo "Posted categorized PR list as a comment."
+fi

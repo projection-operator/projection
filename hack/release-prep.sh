@@ -124,6 +124,22 @@ order=(feat fix docs refactor build "build(deps)" chore "chore(deps)" ci test ot
 
 build_comment_body() {
   printf '## PRs merged since %s\n\n' "$latest_tag"
+
+  # Soft guard: warn if every PR is build(deps) or chore(deps).
+  local non_deps
+  non_deps=$(awk -F'\t' '$1 != "build(deps)" && $1 != "chore(deps)" {print}' <<<"$categorized" | wc -l | tr -d ' ')
+  if [[ "$non_deps" -eq 0 ]]; then
+    cat <<'EOF'
+> [!WARNING]
+> All PRs since the last tag are dependency bumps. Consider whether this release
+> is warranted — per Keep a Changelog, transitive bumps have no user-facing
+> effect and are typically omitted from the CHANGELOG. If you're cutting this
+> patch specifically because of a security advisory in a bumped dep, say so
+> in the `### Changed` section below.
+
+EOF
+  fi
+
   local cat
   for cat in "${order[@]}"; do
     local lines

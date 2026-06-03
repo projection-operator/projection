@@ -205,17 +205,76 @@ EOF
   rm -f "$section_file"
 }
 
+# Replace exactly one or more occurrences of $pattern with $replacement in $file.
+# Fails the whole script if the pattern is not found — drift detection.
+sed_strict() {
+  local file="$1" pattern="$2" replacement="$3"
+  if ! grep -qE -- "$pattern" "$file"; then
+    echo "ERROR: pattern not found in $file: $pattern" >&2
+    return 1
+  fi
+  # Use a sed delimiter unlikely to appear in URLs.
+  sed -i.bak "s|${pattern}|${replacement}|g" "$file" && rm -f "$file.bak"
+}
+
+mutate_chart_and_docs() {
+  local root="$1"  # workdir root
+
+  # charts/projection/Chart.yaml
+  sed_strict "$root/charts/projection/Chart.yaml" \
+    "^version: ${ver}$" "version: ${next_ver}"
+  sed_strict "$root/charts/projection/Chart.yaml" \
+    "^appVersion: \"${ver}\"$" "appVersion: \"${next_ver}\""
+
+  # README.md
+  sed_strict "$root/README.md" \
+    "  --version ${ver} \\\\" "  --version ${next_ver} \\\\"
+  sed_strict "$root/README.md" \
+    "releases/download/v${ver}/install.yaml" \
+    "releases/download/v${next_ver}/install.yaml"
+
+  # charts/projection/README.md
+  sed_strict "$root/charts/projection/README.md" \
+    "--set image.tag=v${ver}" "--set image.tag=v${next_ver}"
+
+  # docs/getting-started.md
+  sed_strict "$root/docs/getting-started.md" \
+    "  --version ${ver} \\\\" "  --version ${next_ver} \\\\"
+  sed_strict "$root/docs/getting-started.md" \
+    "releases/download/v${ver}/install.yaml" \
+    "releases/download/v${next_ver}/install.yaml"
+
+  # docs/security.md
+  sed_strict "$root/docs/security.md" \
+    "cosign verify ghcr.io/projection-operator/projection:v${ver}" \
+    "cosign verify ghcr.io/projection-operator/projection:v${next_ver}"
+  sed_strict "$root/docs/security.md" \
+    "cosign verify ghcr.io/projection-operator/charts/projection:${ver}" \
+    "cosign verify ghcr.io/projection-operator/charts/projection:${next_ver}"
+}
+
 # Apply all file mutations to a temp working dir, then either show diff (dry-run)
 # or apply for real (live mode). This keeps mutation logic identical between modes.
 workdir=$(mktemp -d)
 trap 'rm -rf "$workdir"' EXIT
+mkdir -p "$workdir/charts/projection" "$workdir/docs"
 cp CHANGELOG.md "$workdir/CHANGELOG.md"
+cp charts/projection/Chart.yaml "$workdir/charts/projection/Chart.yaml"
+cp charts/projection/README.md "$workdir/charts/projection/README.md"
+cp README.md "$workdir/README.md"
+cp docs/getting-started.md "$workdir/docs/getting-started.md"
+cp docs/security.md "$workdir/docs/security.md"
 
 mutate_changelog "$workdir/CHANGELOG.md"
+mutate_chart_and_docs "$workdir"
 
 if $dry_run; then
   echo ""
-  echo "===== CHANGELOG.md diff (dry-run preview) ====="
-  diff -u CHANGELOG.md "$workdir/CHANGELOG.md" || true
-  echo "===== end diff ====="
+  for f in CHANGELOG.md charts/projection/Chart.yaml charts/projection/README.md README.md docs/getting-started.md docs/security.md; do
+    if ! diff -q "$f" "$workdir/$f" >/dev/null; then
+      echo "===== $f diff (dry-run preview) ====="
+      diff -u "$f" "$workdir/$f" || true
+      echo ""
+    fi
+  done
 fi

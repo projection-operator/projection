@@ -71,3 +71,74 @@ if [[ "$(git rev-parse HEAD)" == "$(git rev-parse "$latest_tag")" ]]; then
   echo "ERROR: HEAD is at $latest_tag — nothing merged since the last release" >&2
   exit 1
 fi
+
+# All PRs merged into main since the latest tag's commit date.
+latest_tag_date=$(git log -1 --format='%aI' "$latest_tag")
+echo "PRs merged since $latest_tag ($latest_tag_date):"
+
+# Pull merged PRs as JSON. -L 200 is plenty for any release window.
+# Use strict ">" so the prior release-prep PR (which has the same mergedAt as
+# the latest tag's commit, since squash-merged-and-tagged) is excluded.
+prs_json=$(gh pr list \
+  --base main --state merged \
+  --search "merged:>$latest_tag_date" \
+  --json number,title,mergedAt,author \
+  -L 200)
+
+pr_count=$(jq 'length' <<<"$prs_json")
+if [[ "$pr_count" -eq 0 ]]; then
+  echo "ERROR: zero merged PRs since $latest_tag — nothing to release" >&2
+  exit 1
+fi
+echo "  found $pr_count PR(s)"
+
+# Categorize each PR by conventional-commit prefix in the title.
+# We recognize: feat, fix, build(deps), chore(deps), docs, refactor, test, ci, build, chore.
+# Anything else falls into "other".
+#
+# Output a tab-separated table: category<TAB>number<TAB>title
+categorized=$(jq -r '.[] | [.number, .title] | @tsv' <<<"$prs_json" \
+  | while IFS=$'\t' read -r num title; do
+      # Each type matches: type:, type(scope):, type!:, type(scope)!:
+      # The "!" forms are Conventional Commits breaking-change markers —
+      # critical to surface in a release-prep tool, not silently lumped into "other".
+      case "$title" in
+        feat:*|feat\(*\):*|feat!:*|feat\(*\)!:*)              cat=feat ;;
+        fix:*|fix\(*\):*|fix!:*|fix\(*\)!:*)                  cat=fix ;;
+        build\(deps\):*)                                       cat="build(deps)" ;;
+        chore\(deps\):*)                                       cat="chore(deps)" ;;
+        docs:*|docs\(*\):*|docs!:*|docs\(*\)!:*)              cat=docs ;;
+        refactor:*|refactor\(*\):*|refactor!:*|refactor\(*\)!:*) cat=refactor ;;
+        test:*|test\(*\):*|test!:*|test\(*\)!:*)              cat=test ;;
+        ci:*|ci\(*\):*|ci!:*|ci\(*\)!:*)                       cat=ci ;;
+        build:*|build\(*\):*|build!:*|build\(*\)!:*)          cat=build ;;
+        chore:*|chore\(*\):*|chore!:*|chore\(*\)!:*)          cat=chore ;;
+        *)                                                     cat=other ;;
+      esac
+      printf '%s\t%s\t%s\n' "$cat" "$num" "$title"
+    done)
+
+# Render the categorized list as a markdown comment.
+# Categories appear in a fixed order; categories with zero entries are skipped.
+order=(feat fix docs refactor build "build(deps)" chore "chore(deps)" ci test other)
+
+build_comment_body() {
+  printf '## PRs merged since %s\n\n' "$latest_tag"
+  local cat
+  for cat in "${order[@]}"; do
+    local lines
+    lines=$(awk -F'\t' -v c="$cat" '$1==c {printf "- #%s — %s\n", $2, $3}' <<<"$categorized")
+    if [[ -n "$lines" ]]; then
+      printf '### %s\n%s\n\n' "$cat" "$lines"
+    fi
+  done
+}
+
+comment_body=$(build_comment_body)
+
+if $dry_run; then
+  echo ""
+  echo "===== PR comment (dry-run preview) ====="
+  echo "$comment_body"
+  echo "===== end preview ====="
+fi

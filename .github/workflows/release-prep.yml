@@ -1,0 +1,59 @@
+name: Release prep
+
+# Manual trigger only. Opens a "release: vX.Y.Z prep" PR (CHANGELOG scaffold,
+# chart bump, doc version strings, categorized PR-list comment) modeled on PR #105.
+# Tagging stays manual after PR merge — existing release.yml + helm-release.yml
+# publish from the pushed tag.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Which semver component to bump'
+        required: true
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      dry_run:
+        description: 'Dry-run: print the proposed diff and PR comment, do not push'
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  prep:
+    name: Open release prep PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # push the release/v*-prep branch
+      pull-requests: write  # open the PR + comment
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: main
+          fetch-depth: 0    # need full history + tags for version computation
+
+      - name: Configure git identity
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Run release-prep script
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUMP: ${{ inputs.bump }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          chmod +x hack/release-prep.sh
+          if [[ "$DRY_RUN" == 'true' ]]; then
+            hack/release-prep.sh --bump "$BUMP" --dry-run \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            hack/release-prep.sh --bump "$BUMP" --no-dry-run \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+          fi

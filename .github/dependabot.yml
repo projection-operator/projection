@@ -17,3 +17,16 @@ updates:
     groups:
       gh-actions:
         patterns: ["*"]
+  # Docs site deps are a pip-compile lockfile (docs/requirements.txt compiled
+  # from docs/requirements.in). Keeping the direct dep moving on a schedule
+  # stops its transitive version ceilings from going stale -- a stale ceiling
+  # is what broke the Docs workflow when a security bump pushed
+  # pymdown-extensions past the `~=10.2` pin of a long-frozen mkdocs-material.
+  - package-ecosystem: pip
+    directory: /docs
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      docs-deps:
+        patterns: ["*"]

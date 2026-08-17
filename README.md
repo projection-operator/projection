@@ -11,7 +11,6 @@
 [![CI](https://github.com/projection-operator/projection/actions/workflows/ci.yml/badge.svg)](https://github.com/projection-operator/projection/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/projection-operator/projection?include_prereleases&sort=semver)](https://github.com/projection-operator/projection/releases)
 [![API](https://img.shields.io/badge/API-v1-blue)](docs/api-stability.md)
-[![Go Report Card](https://goreportcard.com/badge/github.com/projection-operator/projection)](https://goreportcard.com/report/github.com/projection-operator/projection)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/projection-operator/projection/badge)](https://scorecard.dev/viewer/?uri=github.com/projection-operator/projection)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12533/badge)](https://www.bestpractices.dev/projects/12533)
 [![License](https://img.shields.io/github/license/projection-operator/projection)](LICENSE)

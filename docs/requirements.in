@@ -1,0 +1,9 @@
+# Direct dependencies for the MkDocs documentation site.
+#
+# `docs/requirements.txt` is the hash-pinned lockfile compiled from this file.
+# Never hand-edit the lockfile -- regenerate it instead:
+#
+#   pip-compile --generate-hashes --output-file=docs/requirements.txt docs/requirements.in
+#
+# Compile with Python 3.12 to match the version used by .github/workflows/docs.yml.
+mkdocs-material

@@ -4,7 +4,7 @@
 # minimal context containing only this Dockerfile and the binary — that's why
 # this file is much shorter than the top-level Dockerfile (which builds from
 # source for `make docker-build`).
-FROM gcr.io/distroless/static:nonroot@sha256:e3f945647ffb95b5839c07038d64f9811adf17308b9121d8a2b87b6a22a80a39
+FROM gcr.io/distroless/static:nonroot@sha256:25ac8f0c3b2334a9eb05452266bd4697864a8c8ef0ef71e5e6480d7f92868329
 WORKDIR /
 COPY manager .
 USER 65532:65532

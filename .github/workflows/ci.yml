@@ -202,11 +202,25 @@ jobs:
             exit 1
           fi
 
+  govulncheck:
+    name: Govulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Setup Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: 1.26.x
+          cache: true
+      - name: Run govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+
   # IMPORTANT: when adding a new top-level job above, append its key to ci-gate.needs below.
   # Branch protection requires only "CI gate"; any job missing from needs is silently unenforced.
   ci-gate:
     name: CI gate
-    needs: [lint, test, build, e2e, chart-test, docs-ref, chart-crd-drift]
+    needs: [lint, test, build, e2e, chart-test, docs-ref, chart-crd-drift, govulncheck]
     if: always()
     runs-on: ubuntu-latest
     steps:

@@ -235,7 +235,7 @@ mutate_chart_and_docs() {
 
   # charts/projection/README.md
   sed_strict "$root/charts/projection/README.md" \
-    "--set image.tag=v${ver}" "--set image.tag=v${next_ver}"
+    "--set image.tag=${ver}" "--set image.tag=${next_ver}"
 
   # docs/getting-started.md
   sed_strict "$root/docs/getting-started.md" \
@@ -246,8 +246,8 @@ mutate_chart_and_docs() {
 
   # docs/security.md
   sed_strict "$root/docs/security.md" \
-    "cosign verify ghcr.io/projection-operator/projection:v${ver}" \
-    "cosign verify ghcr.io/projection-operator/projection:v${next_ver}"
+    "cosign verify ghcr.io/projection-operator/projection:${ver}" \
+    "cosign verify ghcr.io/projection-operator/projection:${next_ver}"
   sed_strict "$root/docs/security.md" \
     "cosign verify ghcr.io/projection-operator/charts/projection:${ver}" \
     "cosign verify ghcr.io/projection-operator/charts/projection:${next_ver}"

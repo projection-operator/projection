@@ -347,7 +347,7 @@ This is the same design point as the [non-aggregation choice](#why-projection-cl
 Release images are pushed to `ghcr.io/projection-operator/projection` and **cosign-signed** with GitHub's OIDC keyless workflow. Verify before pulling:
 
 ```bash
-cosign verify ghcr.io/projection-operator/projection:v0.3.2 \
+cosign verify ghcr.io/projection-operator/projection:0.3.2 \
   --certificate-identity-regexp "https://github.com/projection-operator/projection/.github/workflows/.*" \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```

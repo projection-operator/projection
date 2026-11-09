@@ -40,3 +40,28 @@ if ! grep -qiE 'resources|required' <<<"$output"; then
 fi
 
 echo "OK: schema rejected the malformed override."
+
+# An unknown top-level key must stay rejected: declaring `global` for subchart use
+# must not loosen the root additionalProperties: false.
+cat >"$bad_values" <<'YAML'
+foo: bar
+YAML
+
+status=0
+output=$(helm lint "$CHART_DIR" -f "$bad_values" 2>&1) || status=$?
+
+if [[ $status -eq 0 ]]; then
+  echo "FAIL: helm lint accepted an unknown top-level key; root additionalProperties is too permissive." >&2
+  echo "Output was:" >&2
+  echo "$output" >&2
+  exit 1
+fi
+
+if ! grep -qE "additional properties 'foo'" <<<"$output"; then
+  echo "FAIL: helm lint failed but the error did not name the unknown 'foo' key." >&2
+  echo "Output was:" >&2
+  echo "$output" >&2
+  exit 1
+fi
+
+echo "OK: schema rejected the unknown top-level key."

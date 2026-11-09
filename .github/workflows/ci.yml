@@ -155,6 +155,8 @@ jobs:
         run: helm lint charts/projection
       - name: Run schema negative test
         run: bash charts/projection/tests/schema-negative.sh
+      - name: Run schema subchart test
+        run: bash charts/projection/tests/schema-subchart.sh
       - name: Run chart tests
         run: helm unittest charts/projection
 

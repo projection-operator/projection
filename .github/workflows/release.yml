@@ -70,7 +70,9 @@ jobs:
         uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
         with:
           distribution: goreleaser
-          version: latest
+          # Pinned because .goreleaser.yaml uses the deprecated dockers and
+          # docker_manifests blocks. Run `goreleaser check` before bumping.
+          version: v2.20.0
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

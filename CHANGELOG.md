@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The Helm chart can now be used as a subchart. `values.schema.json` declares `global`, which Helm injects into every subchart's values and which the root `additionalProperties: false` previously rejected, so any umbrella chart (or a direct install passing `global:`) failed schema validation. Unknown top-level keys are still rejected. ([#166](https://github.com/projection-operator/projection/pull/166))
 
+## [0.3.3] - 2026-11-09
+
+### Added
+
+### Changed
+
+### Fixed
+
 ## [0.3.2] - 2026-05-18
 
 ### Changed

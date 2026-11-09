@@ -111,6 +111,30 @@ Some Kinds carry apiserver-allocated spec fields that must be stripped before mi
 
 The umbrella issue tracking this work is [#32](https://github.com/projection-operator/projection/issues/32).
 
+## Preparing a release
+
+Maintainers prepare a release by running `hack/release-prep.sh` locally, from an
+up-to-date `main` with tags fetched:
+
+```bash
+hack/release-prep.sh --bump patch               # preview only (the default)
+hack/release-prep.sh --bump patch --no-dry-run  # push the branch and open the PR
+```
+
+The script needs:
+
+- bash 4 or later. macOS ships 3.2, so install a newer one with `brew install bash`.
+- `jq`, and `gh` logged in with write access to the repo.
+- The `release` label on the repo, which it applies to the PR.
+
+It commits with your local git identity, pushes `release/vX.Y.Z-prep`, opens the
+PR, and comments with the categorized list of merged PRs. Fill in the CHANGELOG
+scaffold and merge the PR. Pushing the `vX.Y.Z` tag then publishes the release.
+
+The **Release prep** workflow in GitHub Actions only runs the preview. It can't
+do the real run, because Actions isn't allowed to open PRs in this repo, and a
+PR opened with the workflow token wouldn't trigger CI.
+
 ## Code of Conduct
 
 This project follows the [Contributor Covenant](./CODE_OF_CONDUCT.md).

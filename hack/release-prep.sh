@@ -5,7 +5,7 @@
 #
 # Default is --dry-run. With --no-dry-run, pushes a release/v<X.Y.Z>-prep branch to
 # origin and opens a PR. Always operates on origin/main; the working tree is
-# expected to be checked out from main (the GHA workflow guarantees this).
+# expected to be checked out from main. Needs bash 4 or later; see CONTRIBUTING.md.
 
 set -euo pipefail
 
@@ -290,7 +290,7 @@ if ! $dry_run; then
     exit 1
   fi
 
-  # Create branch off current HEAD (workflow guarantees this is main).
+  # Create branch off current HEAD (expected to be main).
   git switch -c "$branch"
 
   # Apply the mutations from workdir to the real tree.

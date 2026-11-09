@@ -17,6 +17,22 @@ updates:
     groups:
       gh-actions:
         patterns: ["*"]
+  # Dockerfile and Dockerfile.release pin base images by digest. Keep the
+  # digests current, but leave moving to a new Go minor (golang:1.26 to 1.27)
+  # to a deliberate bump alongside go.mod and the workflows.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    ignore:
+      - dependency-name: golang
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
+    groups:
+      docker-images:
+        patterns: ["*"]
   # Docs site deps are a pip-compile lockfile (docs/requirements.txt compiled
   # from docs/requirements.in). Keeping the direct dep moving on a schedule
   # stops its transitive version ceilings from going stale -- a stale ceiling

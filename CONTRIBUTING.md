@@ -47,7 +47,7 @@ that streams reconciler logs, events, and Projection statuses side by side.
 Running a single Go test:
 
 ```bash
-export KUBEBUILDER_ASSETS="$(./bin/setup-envtest use 1.34.1 --bin-dir ./bin -p path)"
+export KUBEBUILDER_ASSETS="$(./bin/setup-envtest use 1.37.0 --bin-dir ./bin -p path)"
 go test ./internal/controller/ -run TestName -v
 ```
 

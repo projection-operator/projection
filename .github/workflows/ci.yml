@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         go-version: [1.26.x]
-        k8s: [1.32.0, 1.33.0, 1.34.1, 1.35.0]
+        k8s: [1.32.0, 1.33.0, 1.34.1, 1.35.0, 1.36.2, 1.37.0]
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -82,6 +82,10 @@ jobs:
         install:
           - kustomize
           - helm
+        # The chart's minimum supported version and the newest release.
+        node:
+          - v1.32.0
+          - v1.37.0
         include:
           - install: kustomize
             deployment_name: projection-controller-manager
@@ -99,7 +103,7 @@ jobs:
         uses: helm/kind-action@ea822c7bf1874f08e5a491df991c228edffc3376 # v1.15.2
         with:
           cluster_name: projection-e2e
-          node_image: kindest/node:v1.32.0
+          node_image: kindest/node:${{ matrix.node }}
       - name: Build image
         run: make docker-build IMG=projection:dev
       - name: Load image into Kind
@@ -137,7 +141,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: e2e-logs-${{ matrix.install }}
+          name: e2e-logs-${{ matrix.install }}-${{ matrix.node }}
           path: e2e-logs
           if-no-files-found: ignore
 

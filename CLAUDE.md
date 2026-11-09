@@ -21,10 +21,10 @@ Build, test, and lint run through the Makefile. Most targets depend on generated
 
 - `make build` — regenerates manifests + DeepCopy code, formats, vets, and builds `bin/manager`.
 - `make run` — runs the controller against the cluster in `~/.kube/config`.
-- `make test` — runs unit/integration tests with envtest (downloads Kubernetes control-plane binaries for version `1.34.1` into `./bin`). Excludes `test/e2e`. Produces `cover.out`.
+- `make test` — runs unit/integration tests with envtest (downloads Kubernetes control-plane binaries for version `1.37.0` into `./bin`). Excludes `test/e2e`. Produces `cover.out`.
 - `make test-e2e` — runs Ginkgo e2e tests under `test/e2e/` against a Kind cluster (must be provisioned separately).
 - `make lint` / `make lint-fix` — runs `golangci-lint` (config in `.golangci.yml`).
-- Run a single test: `go test ./internal/controller/ -run TestName -v` (requires `KUBEBUILDER_ASSETS` to point at envtest binaries — easiest via `make test`, or export `KUBEBUILDER_ASSETS="$(./bin/setup-envtest use 1.34.1 --bin-dir ./bin -p path)"` first).
+- Run a single test: `go test ./internal/controller/ -run TestName -v` (requires `KUBEBUILDER_ASSETS` to point at envtest binaries — easiest via `make test`, or export `KUBEBUILDER_ASSETS="$(./bin/setup-envtest use 1.37.0 --bin-dir ./bin -p path)"` first).
 
 Code generation (run after editing `api/v1/*_types.go` or any `+kubebuilder:*` marker):
 

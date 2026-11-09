@@ -7,17 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- The Helm chart can now be used as a subchart. `values.schema.json` declares `global`, which Helm injects into every subchart's values and which the root `additionalProperties: false` previously rejected, so any umbrella chart (or a direct install passing `global:`) failed schema validation. Unknown top-level keys are still rejected. ([#166](https://github.com/projection-operator/projection/pull/166))
-
 ## [0.3.3] - 2026-11-09
-
-### Added
 
 ### Changed
 
+- Built with Go 1.26.10 (v0.3.2 was built with 1.26.3). `go.mod` now requires 1.26.10, and the Dockerfile builder image is pinned to a 1.26.10 digest. ([#168](https://github.com/projection-operator/projection/pull/168))
+- The `gcr.io/distroless/static:nonroot` base image is bumped to a current digest in `Dockerfile` and `Dockerfile.release`. ([#170](https://github.com/projection-operator/projection/pull/170))
+- Dependencies updated: `github.com/google/cel-go` 0.30.0 and `golang.org/x/net` 0.62.0 ([#169](https://github.com/projection-operator/projection/pull/169)); `k8s.io/{api,apiextensions-apiserver,apimachinery,client-go}` 0.37.2, `github.com/prometheus/common` 0.73.1 and `github.com/onsi/ginkgo/v2` 2.34.0 ([#164](https://github.com/projection-operator/projection/pull/164)); plus routine dependency and GitHub Actions updates since v0.3.2.
+
 ### Fixed
+
+- The Helm chart can now be used as a subchart. `values.schema.json` declares `global`, which Helm injects into every subchart's values and which the root `additionalProperties: false` previously rejected, so any umbrella chart (or a direct install passing `global:`) failed schema validation. Unknown top-level keys are still rejected. ([#166](https://github.com/projection-operator/projection/pull/166))
+- The documented `cosign verify` command and `image.tag` override no longer use a leading `v`. Images are published as `X.Y.Z`, so the `vX.Y.Z` form never existed. ([#167](https://github.com/projection-operator/projection/pull/167))
+
+### Security
+
+Resolves the 41 advisories that `govulncheck -mode binary` reports for the v0.3.2 release binary. The same scan of a build with these changes reports none. Some IDs apply to both the standard library and `golang.org/x/net`.
+
+- Go standard library, fixed by Go 1.26.10: GO-2026-4970, GO-2026-5026, GO-2026-5037, GO-2026-5038, GO-2026-5039, GO-2026-5856, GO-2026-5942, GO-2026-5972, GO-2026-6088, GO-2026-6089, GO-2026-6090, GO-2026-6091, GO-2026-6218, GO-2026-6599, GO-2026-6600, GO-2026-6603, GO-2026-6605, GO-2026-6607, GO-2026-6608, GO-2026-6609, GO-2026-6610, GO-2026-6611, GO-2026-6612, GO-2026-6613, GO-2026-6617, GO-2026-6809.
+- `golang.org/x/net`: GO-2026-5025, GO-2026-5026, GO-2026-5027, GO-2026-5028, GO-2026-5029, GO-2026-5030, GO-2026-5942, GO-2026-6603, GO-2026-6610, GO-2026-6611, GO-2026-6612, GO-2026-6617, GO-2026-6860, GO-2026-6866.
+- `google.golang.org/grpc`: GO-2026-6061, GO-2026-6348, GO-2026-6441, GO-2026-6443.
+- `golang.org/x/text`: GO-2026-5970, GO-2026-6629.
+- `go.opentelemetry.io/otel`: GO-2026-5158.
+- `github.com/google/cel-go`: GO-2026-6094.
 
 ## [0.3.2] - 2026-05-18
 
